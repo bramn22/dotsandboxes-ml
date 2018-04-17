@@ -1,0 +1,56 @@
+Verzameling van papers/boeken/videos over ML: https://github.com/aikorea/awesome-rl#game-playing
+
+Solving dots & boxes (mogelijke representatie):
+https://www.aaai.org/ocs/index.php/AAAI/AAAI12/paper/viewFile/5126/5218
+
+Basis ml oplossing voor dots & boxes (mogelijke representatie):
+https://pdfs.semanticscholar.org/978e/9f0350589da0973ecd36062a136a680436ec.pdf
+
+Monte Carlo voor dots & boxes (mogelijke representatie):
+http://ieeexplore.ieee.org/document/7317912/
+http://ieeexplore.ieee.org.kuleuven.ezproxy.kuleuven.be/stamp/stamp.jsp?tp=&arnumber=7317912&tag=1
+
+Q-learning voor dots & boxes:
+http://www.csc.kth.se/utbildning/kandidatexjobb/datateknik/2010/rapport/arvidsson_oskar_OCH_wallgren_linus_K10047.pdf
+
+RL in board games:
+https://www.cs.bris.ac.uk/Publications/Papers/2000100.pdf
+
+Alpha Go:
+https://www.nature.com/articles/nature16961
+
+Alpha Go Zero:
+https://deepmind.com/documents/119/agz_unformatted_nature.pdf
+
+Blog deep RL:
+https://ai.intel.com/demystifying-deep-reinforcement-learning/
+
+Algorithms for RL:
+https://sites.ualberta.ca/~szepesva/papers/RLAlgsInMDPs.pdf
+
+RL book:
+http://incompleteideas.net/book/ebook/the-book.html
+
+Actor-Critic paper:
+https://papers.nips.cc/paper/1786-actor-critic-algorithms.pdf
+
+Actor-Critic slides:
+http://rll.berkeley.edu/deeprlcourse/f17docs/lecture_5_actor_critic_pdf.pdf
+
+Actor-Critic review paper:
+http://web.mit.edu/jnt/www/Papers/J094-03-kon-actors.pdf
+
+Policy Gradients:
+https://papers.nips.cc/paper/1713-policy-gradient-methods-for-reinforcement-learning-with-function-approximation.pdf
+
+Deep Q learning Deepmind:
+https://storage.googleapis.com/deepmind-media/dqn/DQNNaturePaper.pdf
+
+Uitleg deep Q learning vs policy gradients:
+https://flyyufelix.github.io/2017/10/12/dqn-vs-pg.html
+
+Combining policy gradient & Q learning:
+https://arxiv.org/abs/1611.01626
+
+Memory replay:
+https://www.padl.ws/papers/Paper%2018.pdf

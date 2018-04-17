@@ -1,0 +1,3 @@
+Possible extensions:
+Adding handmade strategies to MCTS
+Extending A2C to A3C
