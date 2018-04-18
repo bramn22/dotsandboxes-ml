@@ -4,8 +4,6 @@ import numpy as np
 import copy
 import agent.MCTS.board_evaluator as eval
 
-player=1
-dimension =3
 
 class MCTS:
 
@@ -18,20 +16,20 @@ class MCTS:
                      (0, 1, "v"),
                       (1, 0, "h")]
         points = [0, 0]
-        root = Node(None, board, free_moves, player, points)
+        root = Node(None, board, free_moves, player, None, points)
         index = 0
         while index < 500 :
             index= index+1
             root_=self.selection(root)
             self.expansion(root_)
-            child, winingP =self.simulation(root_)
-            self.backpropagation(child,winingP)
+            child, winning_player = self.simulation(root_)
+            self.backpropagation(child, winning_player)
 
 
         print(root)
         for child in root.children:
             print(child)
-        # root = Node(parent=None, free_moves=[1, 2, 3, 4, 5], player=1)
+        #root = Node(parent=None, free_moves=[1, 2, 3, 4, 5], player=1)
         # print(root)
         # node = self.selection(root)
         # print(node)
@@ -41,6 +39,19 @@ class MCTS:
         # print(self.selection(node))
         # make initial state the root node
         pass
+
+    def run(self, board, free_moves, player):
+        points = [0, 0]
+        root = Node(None, board, free_moves, player, None, points)
+        index = 0
+        while index < 100:
+            index = index+1
+            selected = self.selection(root)
+            self.expansion(selected)
+            child, winning_player = self.simulation(selected)
+            self.backpropagation(child, winning_player)
+        return max(root.children, key=lambda c: c.win_rate)
+
 
     def selection(self, root):
         print("Start of selection.")
@@ -83,7 +94,7 @@ class MCTS:
         print("End of backpropagation.")
 
     def random_playout(self, node):
-        moves = node.free_moves
+        moves = copy.deepcopy(node.free_moves)
         points = [0, 0]
         cur_player = node.player
         board = node.board
@@ -121,13 +132,14 @@ class Node:
     visit_rate = 0
     c = math.sqrt(2)
 
-    def __init__(self, parent, board, free_moves, player, points):
+    def __init__(self, parent, board, free_moves, player, move, points):
         self.parent = parent
         self.board = board
         self.free_moves = free_moves
         self.children = []
         self.player = player
         self.points = points
+        self.move=move
 
     def expand_children(self):
         # translate free moves to child nodes
@@ -139,7 +151,7 @@ class Node:
                 child_player = eval.user_action(move, self.player, child_board, child_points)
                 child_free_moves = copy.deepcopy(self.free_moves) # makes copy of list
                 del child_free_moves[index]
-                self.children.append(Node(self, child_board, child_free_moves, child_player, child_points))
+                self.children.append(Node(self, child_board, child_free_moves, child_player,move,child_points))
 
 
     def uct(self):
@@ -148,6 +160,6 @@ class Node:
         return (self.win_rate/self.visit_rate) + self.c * math.sqrt(math.log(self.parent.visit_rate)/self.visit_rate)
 
     def __str__(self):
-        return "Node: player-{}, wr-{}, vr-{}, free-moves-{}".format(self.player, self.win_rate, self.visit_rate, self.free_moves)
+        return "Node: player-{}, wr-{}, vr-{}, free-moves-{}, move-{}".format(self.player, self.win_rate, self.visit_rate, self.free_moves,self.move)
 
 MCTS()

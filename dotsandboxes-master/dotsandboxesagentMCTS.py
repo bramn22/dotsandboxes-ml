@@ -62,6 +62,7 @@ class DotsAndBoxesAgent:
                 columns.append({"v":0, "h":0})
             rows.append(columns)
         self.cells = rows
+        self.mcts = MCTS()
 		
 
 
@@ -87,38 +88,25 @@ class DotsAndBoxesAgent:
 
         :return: (row, column, orientation)
         """
-
-        dtEnd = datetime.now().__add__(5000)
         logger.info("Computing next move (grid={}x{}, player={})"\
                 .format(self.nb_rows, self.nb_cols, self.player))
-        # Create representation of board in which MCTS can construct a tree
-        # This is done until time has expired
-        while(datetime.now()<dtEnd):
-            free_lines = []
-            for ri in range(len(self.cells)):
-                row = self.cells[ri]
-                for ci in range(len(row)):
-                    cell = row[ci]
-                    if ri < (len(self.cells) - 1) and cell["v"] == 0:
-                        free_lines.append((ri, ci, "v"))
-                    if ci < (len(row) - 1) and cell["h"] == 0:
-                        free_lines.append((ri, ci, "h"))
-            #Step 1 : Selection MCTS
-            promisingNode = MCTS.selectionMCTS(free_lines)
-            
-
-
-            if len(free_lines) == 0:
-                # Board full
-                return None
-        movei = random.randint(0, len(free_lines) - 1)
+        # Random move
+        free_lines = []
+        for ri in range(len(self.cells)):
+            row = self.cells[ri]
+            for ci in range(len(row)):
+                cell = row[ci]
+                if ri < (len(self.cells) - 1) and cell["v"] == 0:
+                    free_lines.append((ri, ci, "v"))
+                if ci < (len(row) - 1) and cell["h"] == 0:
+                    free_lines.append((ri, ci, "h"))
+        if len(free_lines) == 0:
+            # Board full
+            return None
+        movei = self.mcts.run(self.cells, free_lines, self.player)
+        #movei = random.randint(0, len(free_lines) - 1)
         r, c, o = free_lines[movei]
         return r, c, o
-
-
-
-
-
 
     def end_game(self):
         self.ended = True
