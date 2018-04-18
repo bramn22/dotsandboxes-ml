@@ -2,13 +2,13 @@ import math
 import random
 import numpy as np
 import copy
-import agent.MCTS.board_evaluator as eval
+import board_evaluator as eval
 
 
 class MCTS:
 
     def __init__(self):
-        player = 1
+        player = 2
         board = [
             [{"v": 0, "h": 0}, {"v": 0, "h": 0}],
             [{"v": 0, "h": 0}, {"v": 0, "h": 0}]]
@@ -17,32 +17,23 @@ class MCTS:
                       (1, 0, "h")]
         points = [0, 0]
         root = Node(None, board, free_moves, player, None, points)
+        self.expansion(root)
         index = 0
-        while index < 500 :
+        while index < 1000 :
             index= index+1
             root_=self.selection(root)
             self.expansion(root_)
             child, winning_player = self.simulation(root_)
             self.backpropagation(child, winning_player)
-
-
         print(root)
         for child in root.children:
             print(child)
-        #root = Node(parent=None, free_moves=[1, 2, 3, 4, 5], player=1)
-        # print(root)
-        # node = self.selection(root)
-        # print(node)
-        # print(node.children)
-        # self.expansion(node)
-        # print(node.children)
-        # print(self.selection(node))
-        # make initial state the root node
         pass
 
     def run(self, board, free_moves, player):
         points = [0, 0]
         root = Node(None, board, free_moves, player, None, points)
+        self.expansion(root)
         index = 0
         while index < 100:
             index = index+1
@@ -97,7 +88,7 @@ class MCTS:
         moves = copy.deepcopy(node.free_moves)
         points = [0, 0]
         cur_player = node.player
-        board = node.board
+        board = copy.deepcopy(node.board)
         while moves:
             move_idx = self.select_random_idx_from_list(moves)
             move = moves[move_idx]
@@ -106,10 +97,10 @@ class MCTS:
         #   take action on random move from moves
             del moves[move_idx]
         # calculate if won or not
-        final_score=[]
-        for index in range(0, len(node.points)):
-            final_score.append(node.points[index] + points[index])
-        #final_score = node.points + points
+        final_score = [sum(x) for x in zip(node.points, points)]
+        #for index in range(0, len(node.points)):
+        #    final_score.append(node.points[index] + points[index])
+
         winning_player = np.argmax(final_score)+1 # (argmax returns index of highest score) + 1 -> player
         print("Player: {} ".format(winning_player))
         return winning_player
@@ -120,11 +111,6 @@ class MCTS:
 
     def select_random_idx_from_list(self, list):
         return random.randint(0, len(list) - 1)
-
-    def take_action(self, player, move, board, free_moves, points):
-        # evaluate move
-        next_player = eval.user_action(move, player, board, points)
-        pass
 
 
 class Node:
