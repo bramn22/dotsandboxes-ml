@@ -1,7 +1,7 @@
 import math
 import random
 import numpy as np
-
+import copy
 import agent.MCTS.board_evaluator as eval
 
 player=1
@@ -10,15 +10,37 @@ dimension =3
 class MCTS:
 
     def __init__(self):
-        root = Node(parent=None, free_moves=[1, 2, 3, 4, 5], player=1)
+        player = 1
+        board = [
+            [{"v": 0, "h": 0}, {"v": 0, "h": 0}],
+            [{"v": 0, "h": 0}, {"v": 0, "h": 0}]]
+        free_moves = [(0, 0, "h"), (0, 0, "v"),
+                     (0, 1, "v"),
+                      (1, 0, "h")]
+        points = [0, 0]
+        root = Node(None, board, free_moves, player, points)
+        index = 0
+        while index < 500 :
+            index= index+1
+            root_=self.selection(root)
+            self.expansion(root_)
+            child, winingP =self.simulation(root_)
+            self.backpropagation(child,winingP)
+
+
         print(root)
-        node = self.selection(root)
-        print(node)
-        print(node.children)
-        self.expansion(node)
-        print(node.children)
-        print(self.selection(node))
+        for child in root.children:
+            print(child)
+        # root = Node(parent=None, free_moves=[1, 2, 3, 4, 5], player=1)
+        # print(root)
+        # node = self.selection(root)
+        # print(node)
+        # print(node.children)
+        # self.expansion(node)
+        # print(node.children)
+        # print(self.selection(node))
         # make initial state the root node
+        pass
 
     def selection(self, root):
         print("Start of selection.")
@@ -36,10 +58,16 @@ class MCTS:
         print("End of expansion.")
 
     def simulation(self, node):
+        print("Start of simulation.")
         # pick node with strategy
-        child = self.select_random_child(node.children)
-        self.random_playout(child)
-        pass
+        if node.children:
+            child = self.select_random_child(node.children)
+            print(child)
+            winning_player = self.random_playout(child)
+            return child, winning_player
+        winning_player = self.random_playout(node)
+        print("End of simulation.")
+        return node, winning_player
 
     def backpropagation(self, node, winning_player):
         print("Start of backpropagation.")
@@ -48,25 +76,36 @@ class MCTS:
             if node.player == winning_player:
                 node.win_rate += 1
             node = node.parent
+        node.visit_rate +=1
+        if node.player == winning_player:
+            node.win_rate += 1
+        print(node.children)
         print("End of backpropagation.")
 
     def random_playout(self, node):
         moves = node.free_moves
-        points = [0., 0.]
+        points = [0, 0]
+        cur_player = node.player
+        board = node.board
         while moves:
             move_idx = self.select_random_idx_from_list(moves)
             move = moves[move_idx]
             # evaluate move using take_action (returns results , next player)
-            next_player = 1
+            cur_player = eval.user_action(move, cur_player, board, points)
         #   take action on random move from moves
             del moves[move_idx]
         # calculate if won or not
-        # node.points + points -> decide winning_player
-        winning_player = 1
+        final_score=[]
+        for index in range(0, len(node.points)):
+            final_score.append(node.points[index] + points[index])
+        #final_score = node.points + points
+        winning_player = np.argmax(final_score)+1 # (argmax returns index of highest score) + 1 -> player
+        print("Player: {} ".format(winning_player))
         return winning_player
 
     def select_random_child(self, nodes):
         return nodes[self.select_random_idx_from_list(nodes)]
+
 
     def select_random_idx_from_list(self, list):
         return random.randint(0, len(list) - 1)
@@ -82,23 +121,26 @@ class Node:
     visit_rate = 0
     c = math.sqrt(2)
 
-    def __init__(self, parent, free_moves, player, closed_box):
+    def __init__(self, parent, board, free_moves, player, points):
         self.parent = parent
+        self.board = board
         self.free_moves = free_moves
         self.children = []
         self.player = player
-        self.closed_box = closed_box
+        self.points = points
 
     def expand_children(self):
         # translate free moves to child nodes
         if not self.children: # if children is emtpy
-            for index, _ in enumerate(self.free_moves):
-                temp_free_moves = list(self.free_moves) # makes copy of list
-                del temp_free_moves[index]
-                if self.closed_box:
-                    self.children.append(Node(self, temp_free_moves, self.player)) # if closed box -> give incremented points for current player
-                else:
-                    self.children.append(Node(self, temp_free_moves, (3 - self.player))) # give current points
+            for index, move in enumerate(self.free_moves):
+                print(move)
+                child_board = copy.deepcopy(self.board)
+                child_points = copy.deepcopy(self.points)
+                child_player = eval.user_action(move, self.player, child_board, child_points)
+                child_free_moves = copy.deepcopy(self.free_moves) # makes copy of list
+                del child_free_moves[index]
+                self.children.append(Node(self, child_board, child_free_moves, child_player, child_points))
+
 
     def uct(self):
         if self.visit_rate == 0:
