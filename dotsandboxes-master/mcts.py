@@ -8,71 +8,54 @@ import board_evaluator as eval
 class MCTS:
 
     def __init__(self):
-        player = 2
-        board = [
-            [{"v": 0, "h": 0}, {"v": 0, "h": 0}],
-            [{"v": 0, "h": 0}, {"v": 0, "h": 0}]]
-        free_moves = [(0, 0, "h"), (0, 0, "v"),
-                     (0, 1, "v"),
-                      (1, 0, "h")]
-        points = [0, 0]
-        root = Node(None, board, free_moves, player, None, points)
-        self.expansion(root)
-        index = 0
-        while index < 1000 :
-            index= index+1
-            root_=self.selection(root)
-            self.expansion(root_)
-            child, winning_player = self.simulation(root_)
-            self.backpropagation(child, winning_player)
-        print(root)
-        for child in root.children:
-            print(child)
         pass
 
     def run(self, board, free_moves, player):
+        #player = 3 - player
+        print(player)
         points = [0, 0]
         root = Node(None, board, free_moves, player, None, points)
         self.expansion(root)
         index = 0
-        while index < 100:
+        while index < 1000:
             index = index+1
             selected = self.selection(root)
             self.expansion(selected)
             child, winning_player = self.simulation(selected)
             self.backpropagation(child, winning_player)
-        return max(root.children, key=lambda c: c.win_rate)
+        max_child = max(root.children, key=lambda c: c.win_rate)
+        return max_child.move, max_child.win_rate/max_child.visit_rate
 
 
     def selection(self, root):
-        print("Start of selection.")
+        #print("Start of selection.")
         # calculate all next available nodes
         node = root
 
         while node.children:
             node = max(node.children, key=lambda c: c.uct())
-        print("End of selection.")
+        #print("End of selection.")
         return node
 
     def expansion(self, node):
-        print("Start of expansion.")
+        #print("Start of expansion.")
         node.expand_children()
-        print("End of expansion.")
+        #print("End of expansion.")
 
     def simulation(self, node):
-        print("Start of simulation.")
+        #print("Start of simulation.")
         # pick node with strategy
         if node.children:
             child = self.select_random_child(node.children)
-            print(child)
+            #print(child)
             winning_player = self.random_playout(child)
             return child, winning_player
         winning_player = self.random_playout(node)
-        print("End of simulation.")
+        #print("End of simulation.")
         return node, winning_player
 
     def backpropagation(self, node, winning_player):
-        print("Start of backpropagation.")
+        #print("Start of backpropagation.")
         while node.parent is not None:
             node.visit_rate += 1
             if node.player == winning_player:
@@ -81,8 +64,8 @@ class MCTS:
         node.visit_rate +=1
         if node.player == winning_player:
             node.win_rate += 1
-        print(node.children)
-        print("End of backpropagation.")
+        #print(node.children)
+        #print("End of backpropagation.")
 
     def random_playout(self, node):
         moves = copy.deepcopy(node.free_moves)
@@ -102,7 +85,7 @@ class MCTS:
         #    final_score.append(node.points[index] + points[index])
 
         winning_player = np.argmax(final_score)+1 # (argmax returns index of highest score) + 1 -> player
-        print("Player: {} ".format(winning_player))
+        #print("Player: {} ".format(winning_player))
         return winning_player
 
     def select_random_child(self, nodes):
@@ -125,13 +108,13 @@ class Node:
         self.children = []
         self.player = player
         self.points = points
-        self.move=move
+        self.move = move
 
     def expand_children(self):
         # translate free moves to child nodes
         if not self.children: # if children is emtpy
             for index, move in enumerate(self.free_moves):
-                print(move)
+                #print(move)
                 child_board = copy.deepcopy(self.board)
                 child_points = copy.deepcopy(self.points)
                 child_player = eval.user_action(move, self.player, child_board, child_points)

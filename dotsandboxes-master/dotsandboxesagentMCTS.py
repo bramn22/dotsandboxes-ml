@@ -103,9 +103,10 @@ class DotsAndBoxesAgent:
         if len(free_lines) == 0:
             # Board full
             return None
-        movei = self.mcts.run(self.cells, free_lines, self.player)
+        movei, prob = self.mcts.run(self.cells, free_lines, next(iter(self.player)))
+        print("move: {}, prob: {}".format(movei, prob))
         #movei = random.randint(0, len(free_lines) - 1)
-        r, c, o = free_lines[movei]
+        r, c, o = movei
         return r, c, o
 
     def end_game(self):

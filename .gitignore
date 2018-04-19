@@ -45,3 +45,4 @@ Thumbs.db
 src/.idea/*
 src/__pycache__/*
 src/tmp/*
+dotsandboxes-master/.idea/*
