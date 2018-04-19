@@ -18,7 +18,7 @@ from collections import defaultdict
 import random
 from datetime import datetime
 
-from agent.MCTS.mcts import MCTS
+from mcts import MCTS
 
 logger = logging.getLogger(__name__)
 games = {}
@@ -103,10 +103,17 @@ class DotsAndBoxesAgent:
         if len(free_lines) == 0:
             # Board full
             return None
-        movei, prob = self.mcts.run(self.cells, free_lines, next(iter(self.player)))
-        print("move: {}, prob: {}".format(movei, prob))
+        print("player: ", self.player)
+        max_child, prob = self.mcts.run(self.cells, free_lines, next(iter(self.player)))
+        print("move: {}, prob: {}".format(max_child.move, prob))
+        n = max_child
+        print(n)
+        while n.children:
+            n = max(n.children, key=lambda c: c.win_rate)
+            print(n)
+
         #movei = random.randint(0, len(free_lines) - 1)
-        r, c, o = movei
+        r, c, o = max_child.move
         return r, c, o
 
     def end_game(self):
