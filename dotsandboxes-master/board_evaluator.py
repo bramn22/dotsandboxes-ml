@@ -58,4 +58,4 @@ def user_action(move, cur_player, cells, points):
         next_player = 3 - cur_player
     else:
         next_player = cur_player
-    return next_player
+    return next_player, won_cell
