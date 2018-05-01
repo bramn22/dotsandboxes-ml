@@ -17,7 +17,7 @@ class MCTS:
         root = Node(None, board, free_moves, player, None, points, False) # opposite player just played the last move
         self.expansion(root)
         index = 0
-        while index < 500:
+        while index < 250:
             index = index+1
             selected = self.selection(root)
             child = self.expansion(selected)
@@ -29,12 +29,12 @@ class MCTS:
                 self.backpropagation(selected, winning_player)
         max_child = max(root.children, key=lambda c: c.win_rate)
         n = max_child
-        print(n)
-        print(n.points)
-        while n.children:
-            n = max(n.children, key=lambda c: c.win_rate)
-            print(n)
-            print(n.points)
+        # print(n)
+        # print(n.points)
+        # while n.children:
+        #     n = max(n.children, key=lambda c: c.win_rate)
+        #     print(n)
+        #     print(n.points)
 
         return max_child, max_child.win_rate/max_child.visit_rate # TODO add move to max_child
 

@@ -18,7 +18,7 @@ from collections import defaultdict
 import random
 from datetime import datetime
 
-from mcts_uct_optimization import MCTS
+from mcts_uct_optimization2 import MCTS
 
 logger = logging.getLogger(__name__)
 games = {}

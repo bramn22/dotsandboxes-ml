@@ -108,9 +108,9 @@ class DotsAndBoxesAgent:
         print("move: {}, prob: {}".format(max_child.move, prob))
         n = max_child
         print(n)
-        while n.children:
-            n = max(n.children, key=lambda c: c.win_rate)
-            print(n)
+        #while n.children:
+        #    n = max(n.children, key=lambda c: c.win_rate)
+        #    print(n)
 
         #movei = random.randint(0, len(free_lines) - 1)
         r, c, o = max_child.move

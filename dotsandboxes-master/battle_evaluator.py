@@ -1,6 +1,8 @@
 
 from dotsandboxesagent import DotsAndBoxesAgent as RandomAgent
 from dotsandboxesagentMCTS import DotsAndBoxesAgent as MCTSAgent
+from dotsandboxesagentMCTS_uct_opt import DotsAndBoxesAgent as MCTSOptAgent
+from dotsandboxesagentMCTS_uct_opt2 import DotsAndBoxesAgent as MCTSOptAgent2
 from board_evaluator import user_action
 import copy
 import numpy as np
@@ -8,7 +10,7 @@ import numpy as np
 class BattleEvaluator:
     def __init__(self, agent1_class, agent2_class, nb_cols, nb_rows, timelimit):
         results = []
-        for i in range(100):
+        for i in range(10):
             print("Game ", i)
             self.reset_game(agent1_class, agent2_class, nb_cols, nb_rows, timelimit)
             self.run()
@@ -21,9 +23,9 @@ class BattleEvaluator:
 
 
     def reset_game(self, agent1_class, agent2_class, nb_cols, nb_rows, timelimit):
-        self.cur_player = 1;
-        self.cur_ended = False;
-        self.points = [0, 0];
+        self.cur_player = 1
+        self.cur_ended = False
+        self.points = [0, 0]
         self.agent1 = agent1_class(player=self.cur_player, nb_rows=nb_rows, nb_cols=nb_cols, timelimit=timelimit)
         self.agent2 = agent2_class(player=3-self.cur_player, nb_rows=nb_rows, nb_cols=nb_cols, timelimit=timelimit)
 
@@ -43,7 +45,7 @@ class BattleEvaluator:
                     r, c, o = move
                     self.agent1.register_action(r, c, o, self.cur_player)
                     self.agent2.register_action(r, c, o, self.cur_player)
-                    self.cur_player = user_action(move=(r, c, o), cur_player=self.cur_player, cells=self.board, points=self.points)
+                    self.cur_player, _ = user_action(move=(r, c, o), cur_player=self.cur_player, cells=self.board, points=self.points)
                 else:
                     self.cur_ended = True
             elif self.cur_player == 2:
@@ -52,22 +54,22 @@ class BattleEvaluator:
                     r, c, o = move
                     self.agent1.register_action(r, c, o, self.cur_player)
                     self.agent2.register_action(r, c, o, self.cur_player)
-                    self.cur_player = user_action(move=(r, c, o), cur_player=self.cur_player, cells=self.board, points=self.points)
+                    self.cur_player, _ = user_action(move=(r, c, o), cur_player=self.cur_player, cells=self.board, points=self.points)
                 else:
                     self.cur_ended = True
-        #print("Game ended")
-        #print(self.points)
+        print("Game ended")
+        print(self.points)
 
 
 
 def main():
     #init board and agents
-    nb_rows = 2
-    nb_cols = 2
+    nb_rows = 3
+    nb_cols = 3
     timelimit = 5000
 
-    random_agent = RandomAgent
-    mcts_agent = MCTSAgent
+    random_agent = MCTSOptAgent2
+    mcts_agent = MCTSOptAgent
 
     BattleEvaluator(random_agent, mcts_agent, nb_rows, nb_cols, timelimit)
 
