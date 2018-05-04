@@ -157,7 +157,8 @@ class Node:
     def uct(self):
         if self.visit_rate == 0:
             return float('inf')
-        return (self.win_rate/self.visit_rate) + self.c * math.sqrt(math.log(self.parent.visit_rate)/self.visit_rate) + self.chain_length
+        # (self.win_rate/self.visit_rate) + self.c * math.sqrt(math.log(self.parent.visit_rate)/self.visit_rate) +
+        return  self.chain_length
 
     def __str__(self):
         return "Node: next_player-{}, wr-{}, vr-{}, free-moves-{}, move-{}, pointsmade-{}, chain_length-{}".format(self.next_player, self.win_rate, self.visit_rate, self.free_moves,self.move, self.points, self.chain_length)

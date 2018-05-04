@@ -3,6 +3,7 @@ from dotsandboxesagent import DotsAndBoxesAgent as RandomAgent
 from dotsandboxesagentMCTS import DotsAndBoxesAgent as MCTSAgent
 from dotsandboxesagentMCTS_uct_opt import DotsAndBoxesAgent as MCTSOptAgent
 from dotsandboxesagentMCTS_uct_opt2 import DotsAndBoxesAgent as MCTSOptAgent2
+
 from board_evaluator import user_action
 import copy
 import numpy as np
@@ -10,7 +11,7 @@ import numpy as np
 class BattleEvaluator:
     def __init__(self, agent1_class, agent2_class, nb_cols, nb_rows, timelimit):
         results = []
-        for i in range(10):
+        for i in range(100):
             print("Game ", i)
             self.reset_game(agent1_class, agent2_class, nb_cols, nb_rows, timelimit)
             self.run()
@@ -68,7 +69,7 @@ def main():
     nb_cols = 3
     timelimit = 5000
 
-    random_agent = MCTSOptAgent2
+    random_agent = MCTSAgent
     mcts_agent = MCTSOptAgent
 
     BattleEvaluator(random_agent, mcts_agent, nb_rows, nb_cols, timelimit)
