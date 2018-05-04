@@ -11,10 +11,12 @@ class MCTS:
         pass
 
     def run(self, board, free_moves, player):
+        self.moves_playout = [move for move in free_moves]
+        self.moves_playout_stats = [[0, 0] for _ in free_moves]
         #player = 3 - player
         print(player)
         points = [0, 0]
-        root = Node(None, board, free_moves, player, None, points, False) # opposite player just played the last move
+        root = Node(None, board, free_moves, player, None, points) # opposite player just played the last move
         self.expansion(root)
         index = 0
         while index < 250:
@@ -45,7 +47,7 @@ class MCTS:
         node = root
 
         while node.children:
-            node = max(node.children, key=lambda c: c.uct())
+            node = max(node.children, key=lambda c: c.uct(self.moves_playout_stats[self.moves_playout.index(c.move)]))
         #print("End of selection.")
         return node
 
@@ -68,15 +70,14 @@ class MCTS:
 
     def backpropagation(self, node, winning_player):
         #print("Start of backpropagation.")
-        orig_node = node
         while node.parent is not None:
             node.visit_rate += 1
             if node.parent.next_player == winning_player: # maybe take parent next_player
-                node.win_rate += orig_node.points[winning_player-1]/(sum(orig_node.points)+1)
+                node.win_rate += 1
             node = node.parent
         node.visit_rate +=1
         if node.next_player == 3 - winning_player: # maybe take parent next_player
-            node.win_rate += orig_node.points[winning_player-1]/(sum(orig_node.points)+1)
+            node.win_rate += 1
         #print(node.children)
         #print("End of backpropagation.")
 
@@ -85,9 +86,11 @@ class MCTS:
         points = [0, 0]
         next_player = node.next_player
         board = copy.deepcopy(node.board)
+        moves_done = []
         while moves:
             move_idx = self.select_random_idx_from_list(moves)
             move = moves[move_idx]
+            moves_done.append(move)
             # evaluate move using take_action (returns results , next player)
             next_player, _ = eval.user_action(move, next_player, board, points)
         #   take action on random move from moves
@@ -98,6 +101,10 @@ class MCTS:
         #    final_score.append(node.points[index] + points[index])
 
         winning_player = np.argmax(final_score)+1 # (argmax returns index of highest score) + 1 -> player
+        for move in moves_done:
+            if winning_player == 2: #TODO check if certainly not a mistake
+                self.moves_playout_stats[self.moves_playout.index(move)][0] += 1
+            self.moves_playout_stats[self.moves_playout.index(move)][1] += 1
         #print("Player: {} ".format(winning_player))
         return winning_player
 
@@ -113,55 +120,41 @@ class Node:
     win_rate = 0
     visit_rate = 0
     c = math.sqrt(2)
-    box_closed_in_move = False
 
-
-    def __init__(self, parent, board, free_moves, next_player, move, points, closed_box):
+    def __init__(self, parent, board, free_moves, next_player, move, points):
         self.parent = parent
         self.board = board
         self.free_moves = free_moves
         self.children = []
+        self.free_moves_stats = [0]*len(self.free_moves)
         self.next_player = next_player
         self.points = points
         self.move = move
-        self.box_closed_in_move = closed_box
-        if self.box_closed_in_move:
-            self.chain_length = 1
-        else:
-            self.chain_length = 0
 
     def expand_children(self):
-        child_has_closed_box = False
         # translate free moves to child nodes
         if not self.children: # if children is emtpy
             for index, move in enumerate(self.free_moves):
                 #print(move)
                 child_board = copy.deepcopy(self.board)
                 child_points = copy.deepcopy(self.points)
-                child_player, closed_box = eval.user_action(move, self.next_player, child_board, child_points)
-                if closed_box:
-                    child_has_closed_box = True
+                child_player, _ = eval.user_action(move, self.next_player, child_board, child_points)
                 child_free_moves = copy.deepcopy(self.free_moves) # makes copy of list
                 del child_free_moves[index]
-                self.children.append(Node(self, child_board, child_free_moves, child_player, move, child_points, closed_box))
-        if child_has_closed_box:
-            self.update_chain_length()
-
-    def update_chain_length(self):
-        if self.box_closed_in_move:
-            self.chain_length += 1
-            if self.parent is not None:
-                self.parent.update_chain_length()
+                self.children.append(Node(self, child_board, child_free_moves, child_player, move, child_points))
 
 
-    def uct(self):
+    def uct(self, stats):
         if self.visit_rate == 0:
             return float('inf')
-        boxes_left = (np.shape(self.board)[0]-1)*(np.shape(self.board)[1] - 1) - sum(self.points)
+        beta = math.sqrt(1000/(3*self.parent.visit_rate + 1000))
+        if stats[1] != 0:
+            return (1-beta)*(self.win_rate/self.visit_rate) + beta*(stats[0]/stats[1]) + self.c * math.sqrt(math.log(self.parent.visit_rate)/self.visit_rate)
+        else:
+            return (self.win_rate / self.visit_rate) + self.c * math.sqrt(
+                math.log(self.parent.visit_rate) / self.visit_rate)
 
-        #return (self.win_rate/self.visit_rate) + self.c * math.sqrt(math.log(self.parent.visit_rate)/self.visit_rate) + self.chain_length
-        return self.chain_length/(boxes_left+1) + (self.win_rate/self.visit_rate)
     def __str__(self):
-        return "Node: next_player-{}, wr-{}, vr-{}, free-moves-{}, move-{}, pointsmade-{}, chain_length-{}".format(self.next_player, self.win_rate, self.visit_rate, self.free_moves,self.move, self.points, self.chain_length)
+        return "Node: next_player-{}, wr-{}, vr-{}, free-moves-{}, move-{}, pointsmade-{}".format(self.next_player, self.win_rate, self.visit_rate, self.free_moves,self.move, self.points)
 
 MCTS()
