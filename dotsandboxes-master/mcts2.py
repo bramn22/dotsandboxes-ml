@@ -7,19 +7,27 @@ import board_evaluator as eval
 
 class MCTS:
 
-    def __init__(self):
-        pass
+    def __init__(self, board, free_moves, player):
+        points = [0, 0]
+        self.root = Node(None, board, free_moves, player, None, points)
+
+    def update_root(self, moves_made, board, free_moves, player):
+        for move_made in moves_made:
+            if self.root.children:
+                self.root = [x for x in self.root.children if x.move == move_made][0]
+            else:
+                points = [0, 0]
+                self.root = Node(None, board, free_moves, player, None, points)
 
     def run(self, board, free_moves, player):
         #player = 3 - player
         print(player)
-        points = [0, 0]
-        root = Node(None, board, free_moves, player, None, points) # opposite player just played the last move
-        self.expansion(root)
+        if not self.root.children:
+            self.expansion(self.root)
         index = 0
-        while index < 500:
+        while index < 20:
             index = index+1
-            selected = self.selection(root)
+            selected = self.selection(self.root)
             child = self.expansion(selected)
             if child is not None:
                 winning_player = self.simulation(child)
@@ -27,7 +35,7 @@ class MCTS:
             else:
                 winning_player = np.argmax(selected.points) + 1
                 self.backpropagation(selected, winning_player)
-        max_child = max(root.children, key=lambda c: c.win_rate)
+        max_child = max(self.root.children, key=lambda c: c.win_rate)
         n = max_child
         # print(n)
         # print(n.points)
@@ -142,5 +150,3 @@ class Node:
 
     def __str__(self):
         return "Node: next_player-{}, wr-{}, vr-{}, free-moves-{}, move-{}, pointsmade-{}".format(self.next_player, self.win_rate, self.visit_rate, self.free_moves,self.move, self.points)
-
-MCTS()
