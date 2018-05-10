@@ -18,7 +18,7 @@ class MCTS:
         root = Node(None, board, free_moves, player, None, points) # opposite player just played the last move
         self.expansion(root)
         index = 0
-        while index < 250:
+        while index < 100:
             index = index+1
             selected = self.selection(root)
             child = self.expansion(selected)
@@ -101,10 +101,9 @@ class MCTS:
 
         winning_player = np.argmax(final_score)+1 # (argmax returns index of highest score) + 1 -> player
         for move in moves_done:
-            if winning_player == node.parent.next_player: #TODO check if certainly not a mistake
-                node.parent.update_playout_stats(move, True)
-            else:
-                node.parent.update_playout_stats(move, False)
+            node.update_playout_stats(move, winning_player,node.parent.next_player)
+
+
         #print("Player: {} ".format(winning_player))
         return winning_player
 
@@ -148,7 +147,7 @@ class Node:
     def uct(self):
         if self.visit_rate == 0:
             return float('inf')
-        beta = math.sqrt(10/(3*self.parent.visit_rate + 10))
+        beta = math.sqrt(200/(3*self.parent.visit_rate + 200))
         stats = self.parent.moves_playout_stats[self.parent.moves_playout.index(self.move)]
         if stats[1] != 0:
             return (1-beta)*(self.win_rate/self.visit_rate) + beta*(stats[0]/stats[1]) + self.c * math.sqrt(math.log(self.parent.visit_rate)/self.visit_rate)
@@ -160,8 +159,27 @@ class Node:
         return "Node: next_player-{}, wr-{}, vr-{}, free-moves-{}, move-{}, pointsmade-{}".format(self.next_player, self.win_rate, self.visit_rate, self.free_moves,self.move, self.points)
 
 
-    def update_playout_stats(self, move, won):
-        if won:
-            self.moves_playout_stats[self.moves_playout.index(move)][0] += 1
-        self.moves_playout_stats[self.moves_playout.index(move)][1] += 1
+    def update_playout_stats(self, move, won,parent_nextplayer):
+        if self.parent:
+            if won == parent_nextplayer: #TODO check if certainly not a mistake
+                self.moves_playout_stats[self.moves_playout.index(move)][0] += 1
+            self.moves_playout_stats[self.moves_playout.index(move)][1] += 1
+            self.parent.update_playout_stats(move, won, parent_nextplayer)
+            #Part added
+            if self.children:
+                for child in self.children:
+                    if move in child.free_moves:
+                        if won == child.next_player:
+                            child.moves_playout_stats[child.moves_playout.index(move)][1] += 1
+                        child.moves_playout_stats[child.moves_playout.index(move)][1] += 1
+            #End new part
+        else:
+            if won == parent_nextplayer: #TODO check if certainly not a mistake
+                self.moves_playout_stats[self.moves_playout.index(move)][0] += 1
+            self.moves_playout_stats[self.moves_playout.index(move)][1] += 1
+            for child in self.children:
+                if move in child.free_moves:
+                    if won == child.next_player:
+                        child.moves_playout_stats[child.moves_playout.index(move)][1] += 1
+                    child.moves_playout_stats[child.moves_playout.index(move)][1] += 1
 MCTS()

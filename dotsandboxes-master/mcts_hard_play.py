@@ -7,8 +7,10 @@ import board_evaluator as eval
 
 class MCTS:
 
-    def __init__(self):
-        pass
+    def __init__(self, board):
+        nb_rows = np.shape(board)[0] - 1
+        nb_cols = np.shape(board)[1] - 1
+        self.boxes = np.zeros(shape=[nb_rows, nb_cols])
 
     def run(self, board, free_moves, player):
         #player = 3 - player
@@ -142,5 +144,3 @@ class Node:
 
     def __str__(self):
         return "Node: next_player-{}, wr-{}, vr-{}, free-moves-{}, move-{}, pointsmade-{}".format(self.next_player, self.win_rate, self.visit_rate, self.free_moves,self.move, self.points)
-
-MCTS()
