@@ -24,7 +24,7 @@ class MCTS:
         if not self.root.children:
             self.expansion(self.root)
         index = 0
-        while index < 1000:
+        while index < 250:
             index = index+1
             selected = self.selection(self.root)
             child = self.expansion(selected)
