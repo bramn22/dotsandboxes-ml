@@ -94,7 +94,7 @@ def main():
     timelimit = 0.5
 
 
-    random_agent = MCTSAgent
+    random_agent = MCTSHard
     mcts_agent = MCTSAgent
 
     BattleEvaluator(random_agent, mcts_agent, nb_rows, nb_cols, timelimit)

@@ -42,7 +42,6 @@ Thumbs.db
 *.blg
 *.log
 *.bak
-src/.idea/*
-src/__pycache__/*
-src/tmp/*
 dotsandboxes-master/.idea/*
+dotsandboxes-master/__pycache__/*
+dotsandboxes-master/DDPG/__pycache__/*

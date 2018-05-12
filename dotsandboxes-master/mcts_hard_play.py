@@ -3,7 +3,7 @@ import random
 import numpy as np
 import copy
 import board_evaluator_optimized as eval
-
+import time
 
 class MCTS:
 
@@ -99,12 +99,21 @@ class MCTS:
 
 
 
-    def __init__(self, board, free_moves, player):
+    def __init__(self, board, free_moves, player, timelimit):
+        _board = copy.deepcopy(board)
+        self.timelimit = timelimit - 0.05
         nb_rows = np.shape(board)[0] - 1
         nb_cols = np.shape(board)[1] - 1
         self.boxes = np.zeros(shape=(nb_rows, nb_cols))
         points = [0, 0]
         self.root = Node(None, self.boxes, free_moves, player, None, points, False)
+
+    def start_timer(self):
+        self.ask_time = time.time()
+
+    def check_time(self):
+        cur_time = time.time()
+        return cur_time - self.ask_time < self.timelimit
 
     def update_root(self, moves_made, free_moves, player):
         root_created = False
@@ -121,16 +130,15 @@ class MCTS:
             self.root = Node(None, self.boxes, free_moves, player, None, points, False)
 
     def run(self, board, player):
+        self.start_timer()
         #player = 3 - player
         print(player)
-        move = self.rule_based_move(board, self.boxes)
-        if move is not None:
-            return (Node(None, None, None, None, move, None, None), -1)
+        rb_move = self.rule_based_move(board, self.boxes)
+
         if not self.root.children:
             self.expansion(self.root)
-        index = 0
-        while index < 1000:
-            index = index+1
+
+        while self.check_time():
             selected = self.selection(self.root)
             child = self.expansion(selected)
             if child is not None:
@@ -140,14 +148,9 @@ class MCTS:
                 winning_player = np.argmax(selected.points) + 1
                 self.backpropagation(selected, winning_player)
         max_child = max(self.root.children, key=lambda c: c.win_rate)
-        n = max_child
-        # print(n)
-        # print(n.points)
-        # while n.children:
-        #     n = max(n.children, key=lambda c: c.win_rate)
-        #     print(n)
-        #     print(n.points)
 
+        if rb_move is not None:
+            return (Node(None, None, None, None, rb_move, None, None), -1)
         return max_child, max_child.win_rate/max_child.visit_rate # TODO add move to max_child
 
     def selection(self, root):

@@ -8,7 +8,7 @@ import time
 class MCTS:
 
     def __init__(self, timelimit):
-        self.timelimit = timelimit - 0.01
+        self.timelimit = timelimit - 0.05
 
 
     def start_timer(self):
@@ -26,10 +26,8 @@ class MCTS:
         points = [0, 0]
         root = Node(None, board, free_moves, player, None, points) # opposite player just played the last move
         self.expansion(root)
-        index = 0
 
         while self.check_time():
-            index = index+1
             selected = self.selection(root)
             child = self.expansion(selected)
             if child is not None:
