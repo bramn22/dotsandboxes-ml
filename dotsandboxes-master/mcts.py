@@ -6,10 +6,10 @@ import board_evaluator as eval
 import time
 
 class MCTS:
-
-    def __init__(self, timelimit):
-        self.timelimit = timelimit - 0.05
-
+    def __init__(self, board, free_moves, player, timelimit):
+        self.timelimit = timelimit - 0.03
+        points = [0, 0]
+        self.root = Node(None, board, free_moves, player, None, points)
 
     def start_timer(self):
         self.ask_time = time.time()
@@ -18,17 +18,25 @@ class MCTS:
         cur_time = time.time()
         return cur_time - self.ask_time < self.timelimit
 
+    def update_root(self, moves_made, board, free_moves, player):
+        root_created = False
+        points = self.root.points
+        for move_made in moves_made:
+            if self.root.children:
+                self.root = [x for x in self.root.children if x.move == move_made][0]
+                points = self.root.points
+            else:
+                root_created = True
+                eval.user_action(move_made, player, board, points)
+        if root_created:
+            self.root = Node(None, board, free_moves, player, None, points)
 
     def run(self, board, free_moves, player):
-        #player = 3 - player
         self.start_timer()
-        print(player)
-        points = [0, 0]
-        root = Node(None, board, free_moves, player, None, points) # opposite player just played the last move
-        self.expansion(root)
-
+        if not self.root.children:
+            self.expansion(self.root)
         while self.check_time():
-            selected = self.selection(root)
+            selected = self.selection(self.root)
             child = self.expansion(selected)
             if child is not None:
                 winning_player = self.simulation(child)
@@ -36,47 +44,31 @@ class MCTS:
             else:
                 winning_player = np.argmax(selected.points) + 1
                 self.backpropagation(selected, winning_player)
-        max_child = max(root.children, key=lambda c: c.win_rate)
-        n = max_child
-        # print(n)
-        # print(n.points)
-        # while n.children:
-        #     n = max(n.children, key=lambda c: c.win_rate)
-        #     print(n)
-        #     print(n.points)
+        max_child = max(self.root.children, key=lambda c: c.win_rate)
 
         return max_child, max_child.win_rate/max_child.visit_rate # TODO add move to max_child
 
 
     def selection(self, root):
-        #print("Start of selection.")
-        # calculate all next available nodes
         node = root
 
         while node.children:
             node = max(node.children, key=lambda c: c.uct())
-        #print("End of selection.")
         return node
 
     def expansion(self, node):
-        #print("Start of expansion.")
         node.expand_children()
         if node.children:
             return self.select_random_child(node.children)
         else:
             return None
-        #print("End of expansion.")
 
     def simulation(self, node):
-        #print("Start of simulation.")
         # pick node with strategy
-            #print(child)
         winning_player = self.random_playout(node)
         return winning_player
-        #print("End of simulation.")
 
     def backpropagation(self, node, winning_player):
-        #print("Start of backpropagation.")
         while node.parent is not None:
             node.visit_rate += 1
             if node.parent.next_player == winning_player: # maybe take parent next_player
@@ -85,8 +77,6 @@ class MCTS:
         node.visit_rate +=1
         if node.next_player == 3 - winning_player: # maybe take parent next_player
             node.win_rate += 1
-        #print(node.children)
-        #print("End of backpropagation.")
 
     def random_playout(self, node):
         moves = copy.deepcopy(node.free_moves)
@@ -102,11 +92,8 @@ class MCTS:
             del moves[move_idx]
         # calculate if won or not
         final_score = [sum(x) for x in zip(node.points, points)]
-        #for index in range(0, len(node.points)):
-        #    final_score.append(node.points[index] + points[index])
 
         winning_player = np.argmax(final_score)+1 # (argmax returns index of highest score) + 1 -> player
-        #print("Player: {} ".format(winning_player))
         return winning_player
 
     def select_random_child(self, nodes):
@@ -135,7 +122,6 @@ class Node:
         # translate free moves to child nodes
         if not self.children: # if children is emtpy
             for index, move in enumerate(self.free_moves):
-                #print(move)
                 child_board = copy.deepcopy(self.board)
                 child_points = copy.deepcopy(self.points)
                 child_player, _ = eval.user_action(move, self.next_player, child_board, child_points)

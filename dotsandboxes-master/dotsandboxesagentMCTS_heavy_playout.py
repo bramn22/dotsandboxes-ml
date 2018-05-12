@@ -18,7 +18,7 @@ from collections import defaultdict
 import random
 from datetime import datetime
 
-from mcts2_uct_optimization import MCTS
+from mcts_heavy_playout import MCTS
 
 logger = logging.getLogger(__name__)
 games = {}
@@ -73,7 +73,7 @@ class DotsAndBoxesAgent:
                     free_lines.append((ri, ci, "v"))
                 if ci < (len(row) - 1) and cell["h"] == 0:
                     free_lines.append((ri, ci, "h"))
-        self.mcts = MCTS(self.cells, free_lines, player)
+        self.mcts = MCTS(self.cells, free_lines, player, timelimit)
 
 
 
@@ -117,9 +117,9 @@ class DotsAndBoxesAgent:
             return None
         print("player: ", self.player)
         next_player = next(iter(self.player))
-        self.mcts.update_root(self.moves_made, self.cells, free_lines, next_player)
+        self.mcts.update_root(self.moves_made,free_lines, next_player)
         self.moves_made = []
-        max_child, prob = self.mcts.run(self.cells, free_lines, next_player)
+        max_child, prob = self.mcts.run(self.cells, next_player)
         print("move: {}, prob: {}".format(max_child.move, prob))
         n = max_child
         print(n)

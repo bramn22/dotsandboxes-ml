@@ -18,7 +18,7 @@ from collections import defaultdict
 import random
 from datetime import datetime
 
-from mcts_hard_play import MCTS
+from mcts_chains import MCTS
 
 logger = logging.getLogger(__name__)
 games = {}
@@ -117,9 +117,9 @@ class DotsAndBoxesAgent:
             return None
         print("player: ", self.player)
         next_player = next(iter(self.player))
-        self.mcts.update_root(self.moves_made,free_lines, next_player)
+        self.mcts.update_root(self.moves_made, self.cells, free_lines, next_player)
         self.moves_made = []
-        max_child, prob = self.mcts.run(self.cells, next_player)
+        max_child, prob = self.mcts.run(self.cells, free_lines, next_player)
         print("move: {}, prob: {}".format(max_child.move, prob))
         n = max_child
         print(n)

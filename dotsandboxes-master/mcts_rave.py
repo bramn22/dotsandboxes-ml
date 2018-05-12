@@ -3,24 +3,45 @@ import random
 import numpy as np
 import copy
 import board_evaluator as eval
-
+import time
 
 class MCTS:
 
-    def __init__(self):
-        pass
+    def __init__(self, board, free_moves, player, timelimit):
+        self.timelimit = timelimit - 0.03
+        points = [0, 0]
+        self.root = Node(None, board, free_moves, player, None, points)
+
+    def start_timer(self):
+        self.ask_time = time.time()
+
+    def check_time(self):
+        cur_time = time.time()
+        return cur_time - self.ask_time < self.timelimit
+
+    def update_root(self, moves_made, board, free_moves, player):
+        root_created = False
+        points = self.root.points
+        for move_made in moves_made:
+            if self.root.children:
+                self.root = [x for x in self.root.children if x.move == move_made][0]
+                points = self.root.points
+            else:
+                root_created = True
+                eval.user_action(move_made, player, board, points)
+        if root_created:
+            self.root = Node(None, board, free_moves, player, None, points)
 
     def run(self, board, free_moves, player):
+        self.start_timer()
+        if not self.root.children:
+            self.expansion(self.root)
+        self.moves_playout = [move for move in free_moves]
+        self.moves_playout_stats = [[0, 0] for _ in free_moves]
 
-        #player = 3 - player
-        print(player)
-        points = [0, 0]
-        root = Node(None, board, free_moves, player, None, points) # opposite player just played the last move
-        self.expansion(root)
-        index = 0
-        while index < 100:
+        while self.check_time():
             index = index+1
-            selected = self.selection(root)
+            selected = self.selection(self.root)
             child = self.expansion(selected)
             if child is not None:
                 winning_player = self.simulation(child)
@@ -28,14 +49,7 @@ class MCTS:
             else:
                 winning_player = np.argmax(selected.points) + 1
                 self.backpropagation(selected, winning_player)
-        max_child = max(root.children, key=lambda c: c.win_rate)
-        n = max_child
-        # print(n)
-        # print(n.points)
-        # while n.children:
-        #     n = max(n.children, key=lambda c: c.win_rate)
-        #     print(n)
-        #     print(n.points)
+        max_child = max(self.root.children, key=lambda c: c.win_rate)
 
         return max_child, max_child.win_rate/max_child.visit_rate # TODO add move to max_child
 
@@ -46,7 +60,7 @@ class MCTS:
         node = root
 
         while node.children:
-            node = max(node.children, key=lambda c: c.uct())
+            node = max(node.children, key=lambda c: c.uct(self.moves_playout_stats[self.moves_playout.index(c.move)]))
         #print("End of selection.")
         return node
 
@@ -101,9 +115,9 @@ class MCTS:
 
         winning_player = np.argmax(final_score)+1 # (argmax returns index of highest score) + 1 -> player
         for move in moves_done:
-            node.update_playout_stats(move, winning_player,node.parent.next_player)
-
-
+            if winning_player == 2: #TODO check if certainly not a mistake
+                self.moves_playout_stats[self.moves_playout.index(move)][0] += 1
+            self.moves_playout_stats[self.moves_playout.index(move)][1] += 1
         #print("Player: {} ".format(winning_player))
         return winning_player
 
@@ -125,8 +139,7 @@ class Node:
         self.board = board
         self.free_moves = free_moves
         self.children = []
-        self.moves_playout = [move for move in free_moves]
-        self.moves_playout_stats = [[0, 0] for _ in free_moves]
+        self.free_moves_stats = [0]*len(self.free_moves)
         self.next_player = next_player
         self.points = points
         self.move = move
@@ -144,11 +157,10 @@ class Node:
                 self.children.append(Node(self, child_board, child_free_moves, child_player, move, child_points))
 
 
-    def uct(self):
+    def uct(self, stats):
         if self.visit_rate == 0:
             return float('inf')
-        beta = math.sqrt(200/(3*self.parent.visit_rate + 200))
-        stats = self.parent.moves_playout_stats[self.parent.moves_playout.index(self.move)]
+        beta = math.sqrt(1000/(3*self.parent.visit_rate + 1000))
         if stats[1] != 0:
             return (1-beta)*(self.win_rate/self.visit_rate) + beta*(stats[0]/stats[1]) + self.c * math.sqrt(math.log(self.parent.visit_rate)/self.visit_rate)
         else:
@@ -158,28 +170,4 @@ class Node:
     def __str__(self):
         return "Node: next_player-{}, wr-{}, vr-{}, free-moves-{}, move-{}, pointsmade-{}".format(self.next_player, self.win_rate, self.visit_rate, self.free_moves,self.move, self.points)
 
-
-    def update_playout_stats(self, move, won,parent_nextplayer):
-        if self.parent:
-            if won == parent_nextplayer: #TODO check if certainly not a mistake
-                self.moves_playout_stats[self.moves_playout.index(move)][0] += 1
-            self.moves_playout_stats[self.moves_playout.index(move)][1] += 1
-            self.parent.update_playout_stats(move, won, parent_nextplayer)
-            #Part added
-            if self.children:
-                for child in self.children:
-                    if move in child.free_moves:
-                        if won == child.next_player:
-                            child.moves_playout_stats[child.moves_playout.index(move)][1] += 1
-                        child.moves_playout_stats[child.moves_playout.index(move)][1] += 1
-            #End new part
-        else:
-            if won == parent_nextplayer: #TODO check if certainly not a mistake
-                self.moves_playout_stats[self.moves_playout.index(move)][0] += 1
-            self.moves_playout_stats[self.moves_playout.index(move)][1] += 1
-            for child in self.children:
-                if move in child.free_moves:
-                    if won == child.next_player:
-                        child.moves_playout_stats[child.moves_playout.index(move)][1] += 1
-                    child.moves_playout_stats[child.moves_playout.index(move)][1] += 1
 MCTS()

@@ -3,23 +3,40 @@ import random
 import numpy as np
 import copy
 import board_evaluator as eval
-
+import time
 
 class MCTS:
+    def __init__(self, board, free_moves, player, timelimit):
+        self.timelimit = timelimit - 0.03
+        points = [0, 0]
+        self.root = Node(None, board, free_moves, player, None, points, False)
 
-    def __init__(self):
-        pass
+    def start_timer(self):
+        self.ask_time = time.time()
+
+    def check_time(self):
+        cur_time = time.time()
+        return cur_time - self.ask_time < self.timelimit
+
+    def update_root(self, moves_made, board, free_moves, player):
+        root_created = False
+        points = self.root.points
+        for move_made in moves_made:
+            if self.root.children:
+                self.root = [x for x in self.root.children if x.move == move_made][0]
+                points = self.root.points
+            else:
+                root_created = True
+                eval.user_action(move_made, player, board, points)
+        if root_created:
+            self.root = Node(None, board, free_moves, player, None, points, False)
 
     def run(self, board, free_moves, player):
-        #player = 3 - player
-        print(player)
-        points = [0, 0]
-        root = Node(None, board, free_moves, player, None, points, False) # opposite player just played the last move
-        self.expansion(root)
-        index = 0
-        while index < 250:
-            index = index+1
-            selected = self.selection(root)
+        self.start_timer()
+        if not self.root.children:
+            self.expansion(self.root)
+        while self.check_time():
+            selected = self.selection(self.root)
             child = self.expansion(selected)
             if child is not None:
                 winning_player = self.simulation(child)
@@ -27,7 +44,7 @@ class MCTS:
             else:
                 winning_player = np.argmax(selected.points) + 1
                 self.backpropagation(selected, winning_player)
-        max_child = max(root.children, key=lambda c: c.win_rate)
+        max_child = max(self.root.children, key=lambda c: c.win_rate)
         n = max_child
         # print(n)
         # print(n.points)
@@ -37,7 +54,6 @@ class MCTS:
         #     print(n.points)
 
         return max_child, max_child.win_rate/max_child.visit_rate # TODO add move to max_child
-
 
     def selection(self, root):
         #print("Start of selection.")
@@ -72,11 +88,11 @@ class MCTS:
         while node.parent is not None:
             node.visit_rate += 1
             if node.parent.next_player == winning_player: # maybe take parent next_player
-                node.win_rate += orig_node.points[winning_player-1]/(sum(orig_node.points)+1)
+                node.win_rate += 1 #+ 0.1*orig_node.points[winning_player]
             node = node.parent
         node.visit_rate +=1
         if node.next_player == 3 - winning_player: # maybe take parent next_player
-            node.win_rate += orig_node.points[winning_player-1]/(sum(orig_node.points)+1)
+            node.win_rate += 1
         #print(node.children)
         #print("End of backpropagation.")
 
@@ -157,11 +173,11 @@ class Node:
     def uct(self):
         if self.visit_rate == 0:
             return float('inf')
-        boxes_left = (np.shape(self.board)[0]-1)*(np.shape(self.board)[1] - 1) - sum(self.points)
+        # (self.win_rate/self.visit_rate) + self.c * math.sqrt(math.log(self.parent.visit_rate)/self.visit_rate) +
+        boxes_left = (np.shape(self.board)[0] - 1) * (np.shape(self.board)[1] - 1) - sum(self.points)
 
-        #return (self.win_rate/self.visit_rate) + self.c * math.sqrt(math.log(self.parent.visit_rate)/self.visit_rate) + self.chain_length
-        return self.chain_length/(boxes_left+1) + (self.win_rate/self.visit_rate)
+        # return (self.win_rate/self.visit_rate) + self.c * math.sqrt(math.log(self.parent.visit_rate)/self.visit_rate) + self.chain_length
+        return self.chain_length / (boxes_left + 1) + 0.5 * (self.win_rate / self.visit_rate)
+
     def __str__(self):
         return "Node: next_player-{}, wr-{}, vr-{}, free-moves-{}, move-{}, pointsmade-{}, chain_length-{}".format(self.next_player, self.win_rate, self.visit_rate, self.free_moves,self.move, self.points, self.chain_length)
-
-MCTS()
