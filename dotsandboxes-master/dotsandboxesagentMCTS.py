@@ -62,7 +62,7 @@ class DotsAndBoxesAgent:
                 columns.append({"v":0, "h":0})
             rows.append(columns)
         self.cells = rows
-        self.mcts = MCTS()
+        self.mcts = MCTS(timelimit)
 		
 
 

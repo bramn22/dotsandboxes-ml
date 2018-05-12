@@ -3,21 +3,31 @@ import random
 import numpy as np
 import copy
 import board_evaluator as eval
-
+import time
 
 class MCTS:
 
-    def __init__(self):
-        pass
+    def __init__(self, timelimit):
+        self.timelimit = timelimit - 0.01
+
+
+    def start_timer(self):
+        self.ask_time = time.time()
+
+    def check_time(self):
+        cur_time = time.time()
+        return cur_time - self.ask_time < self.timelimit
+
 
     def run(self, board, free_moves, player):
         #player = 3 - player
+        self.start_timer()
         print(player)
         points = [0, 0]
         root = Node(None, board, free_moves, player, None, points) # opposite player just played the last move
         self.expansion(root)
         index = 0
-        while index < 500:
+        while self.check_time():
             index = index+1
             selected = self.selection(root)
             child = self.expansion(selected)
@@ -142,5 +152,3 @@ class Node:
 
     def __str__(self):
         return "Node: next_player-{}, wr-{}, vr-{}, free-moves-{}, move-{}, pointsmade-{}".format(self.next_player, self.win_rate, self.visit_rate, self.free_moves,self.move, self.points)
-
-MCTS()

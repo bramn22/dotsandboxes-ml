@@ -10,6 +10,12 @@ from dotsandboxesagentMCTS_rave_opt import DotsAndBoxesAgent as MCTSRaveAgent
 from board_evaluator import user_action
 import copy
 import numpy as np
+import logging
+import time
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
+
 
 class BattleEvaluator:
     def __init__(self, agent1_class, agent2_class, nb_cols, nb_rows, timelimit):
@@ -46,7 +52,11 @@ class BattleEvaluator:
     def run(self):
         while not self.cur_ended:
             if self.cur_player == 1:
+                ask_time = time.time()
                 move = self.agent1.next_action()
+                recv_time = time.time()
+                diff_time = recv_time - ask_time
+                logger.info("Move received after (s): {}".format(diff_time))
                 if move is not None:
                     r, c, o = move
                     self.agent1.register_action(r, c, o, self.cur_player)
@@ -55,7 +65,11 @@ class BattleEvaluator:
                 else:
                     self.cur_ended = True
             elif self.cur_player == 2:
+                ask_time = time.time()
                 move = self.agent2.next_action()
+                recv_time = time.time()
+                diff_time = recv_time - ask_time
+                logger.info("Move received after (s): {}".format(diff_time))
                 if move is not None:
                     r, c, o = move
                     self.agent1.register_action(r, c, o, self.cur_player)
@@ -72,10 +86,10 @@ def main():
     #init board and agents
     nb_rows = 3
     nb_cols = 3
-    timelimit = 5000
+    timelimit = 0.5
 
-    random_agent = MCTS2OptAgent
-    mcts_agent = MCTSOptAgent
+    random_agent = MCTSAgent
+    mcts_agent = MCTSAgent
 
     BattleEvaluator(random_agent, mcts_agent, nb_rows, nb_cols, timelimit)
 
