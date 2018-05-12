@@ -27,6 +27,7 @@ class MCTS:
         root = Node(None, board, free_moves, player, None, points) # opposite player just played the last move
         self.expansion(root)
         index = 0
+
         while self.check_time():
             index = index+1
             selected = self.selection(root)

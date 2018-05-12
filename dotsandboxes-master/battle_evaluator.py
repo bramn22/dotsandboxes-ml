@@ -5,6 +5,11 @@ from dotsandboxesagentMCTS2 import DotsAndBoxesAgent as MCTSAgent2
 from dotsandboxesagentMCTS_uct_opt import DotsAndBoxesAgent as MCTSOptAgent
 from dotsandboxesagentMCTS_uct_opt2 import DotsAndBoxesAgent as MCTSOptAgent2
 from dotsandboxesagentMCTS2_uct_opt import DotsAndBoxesAgent as MCTS2OptAgent
+from dotsandboxesagentMCTS_hard import DotsAndBoxesAgent as MCTSHard
+from dotsandboxesagentMCTS_hard2 import DotsAndBoxesAgent as MCTSHard2
+
+
+
 from dotsandboxesagentMCTS_rave_opt import DotsAndBoxesAgent as MCTSRaveAgent
 
 from board_evaluator import user_action
@@ -87,6 +92,7 @@ def main():
     nb_rows = 3
     nb_cols = 3
     timelimit = 0.5
+
 
     random_agent = MCTSAgent
     mcts_agent = MCTSAgent
