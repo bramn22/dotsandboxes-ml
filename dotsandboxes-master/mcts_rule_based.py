@@ -286,7 +286,8 @@ class Node:
             return float('inf')
         # (self.win_rate/self.visit_rate) + self.c * math.sqrt(math.log(self.parent.visit_rate)/self.visit_rate) +
         boxes_left = (np.shape(self.boxes)[0]) * (np.shape(self.boxes)[1]) - sum(self.points)
-        beta = math.sqrt(100 / (3 * self.parent.visit_rate + 100)) #TODO : select param
+        #beta = math.sqrt(100 / (3 * self.parent.visit_rate + 100)) #TODO : select param
+        beta = 0.5
         # return (self.win_rate/self.visit_rate) + self.c * math.sqrt(math.log(self.parent.visit_rate)/self.visit_rate) + self.chain_length
         #return self.chain_length / (boxes_left + 1) + 0.5 * (self.win_rate / self.visit_rate)
         return beta*(self.chain_length / (boxes_left + 1)) + (1-beta) * (self.win_rate / self.visit_rate)

@@ -12,6 +12,7 @@ class MCTS:
         points = [0, 0]
         self.root = Node(None, board, free_moves, player, None, points)
 
+
     def start_timer(self):
         self.ask_time = time.time()
 

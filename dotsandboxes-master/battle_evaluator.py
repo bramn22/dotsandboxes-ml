@@ -5,6 +5,7 @@ from dotsandboxesagentMCTS import DotsAndBoxesAgent as MCTS
 from dotsandboxesagentMCTS_chains import DotsAndBoxesAgent as Chains
 from dotsandboxesagentMCTS_heavy_playout import DotsAndBoxesAgent as Heavy
 from dotsandboxesagentMCTS_rule_based import DotsAndBoxesAgent as RuleBased
+
 from dotsandboxesagentMCTS_rave2 import  DotsAndBoxesAgent as Rave2
 
 from board_evaluator import user_action
@@ -20,20 +21,20 @@ logging.basicConfig(level=logging.INFO)
 class BattleEvaluator:
     def __init__(self, agent1_class, agent2_class, nb_cols, nb_rows, timelimit):
         results = []
-        for i in range(250):
-
+        #times = []
+        for i in range(50):
             print("Game ", i)
             self.reset_game(agent1_class, agent2_class, nb_cols, nb_rows, timelimit)
             self.run()
             results.append(copy.copy(self.points))
             winners = [np.argmax(r) + 1 if r[0] != r[1] else 0 for r in results]
             print("3---Player 1: {}, Player 2: {}, Draw: {}".format(winners.count(1), winners.count(2), winners.count(0)))
-
+            #times.append(self.agent1.mcts.timing)
         print(results)
         winners = [np.argmax(r)+1 if r[0]!=r[1] else 0 for r in results]
         print(winners)
         print("3---Player 1: {}, Player 2: {}, Draw: {}".format(winners.count(1), winners.count(2), winners.count(0)))
-
+        #print("avg start times: ", np.mean(times))
     def reset_game(self, agent1_class, agent2_class, nb_cols, nb_rows, timelimit):
         self.cur_player = 1
         self.cur_ended = False
@@ -90,8 +91,8 @@ def main():
     timelimit = 0.5
 
 
-    random_agent = MCTS
-    mcts_agent = Rave2
+    random_agent = RuleBased
+    mcts_agent = Random
 
 
     BattleEvaluator(random_agent, mcts_agent, nb_rows, nb_cols, timelimit)

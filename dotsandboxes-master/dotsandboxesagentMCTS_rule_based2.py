@@ -18,14 +18,11 @@ from collections import defaultdict
 import random
 from datetime import datetime
 
-from mcts_heavy_playout import MCTS
+from mcts_rule_based2 import MCTS
 
 logger = logging.getLogger(__name__)
 games = {}
 agentclass = None
-
-
-
 
 
 class DotsAndBoxesAgent:
@@ -74,6 +71,7 @@ class DotsAndBoxesAgent:
                 if ci < (len(row) - 1) and cell["h"] == 0:
                     free_lines.append((ri, ci, "h"))
         self.mcts = MCTS(self.cells, free_lines, player, timelimit)
+
 
 
     def add_player(self, player):

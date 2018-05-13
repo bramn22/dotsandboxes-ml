@@ -175,9 +175,9 @@ class Node:
             return float('inf')
         # (self.win_rate/self.visit_rate) + self.c * math.sqrt(math.log(self.parent.visit_rate)/self.visit_rate) +
         boxes_left = (np.shape(self.board)[0] - 1) * (np.shape(self.board)[1] - 1) - sum(self.points)
-
+        beta = 0.5
         # return (self.win_rate/self.visit_rate) + self.c * math.sqrt(math.log(self.parent.visit_rate)/self.visit_rate) + self.chain_length
-        return self.chain_length / (boxes_left + 1) + 0.5 * (self.win_rate / self.visit_rate)
+        return beta * (self.chain_length / (boxes_left + 1)) + (1-beta)* (self.win_rate / self.visit_rate)
 
     def __str__(self):
         return "Node: next_player-{}, wr-{}, vr-{}, free-moves-{}, move-{}, pointsmade-{}, chain_length-{}".format(self.next_player, self.win_rate, self.visit_rate, self.free_moves,self.move, self.points, self.chain_length)
