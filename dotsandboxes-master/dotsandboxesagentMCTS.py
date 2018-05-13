@@ -73,7 +73,7 @@ class DotsAndBoxesAgent:
                     free_lines.append((ri, ci, "v"))
                 if ci < (len(row) - 1) and cell["h"] == 0:
                     free_lines.append((ri, ci, "h"))
-        self.mcts = MCTS(self.cells, free_lines, player)
+        self.mcts = MCTS(self.cells, free_lines, player, timelimit)
 
 
 
