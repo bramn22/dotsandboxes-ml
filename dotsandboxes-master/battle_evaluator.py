@@ -2,7 +2,6 @@
 from dotsandboxesagent import DotsAndBoxesAgent as RandomAgent
 from dotsandboxesagentMCTS import DotsAndBoxesAgent as MCTSAgent
 from dotsandboxesagentMCTS import DotsAndBoxesAgent as MCTSAgent2
-from dotsandboxesagentMCTS_uct_opt import DotsAndBoxesAgent as MCTSOptAgent
 from dotsandboxesagentMCTS_chains import DotsAndBoxesAgent as MCTSOptAgent2
 from dotsandboxesagentMCTS_chains import DotsAndBoxesAgent as MCTS2OptAgent
 from dotsandboxesagentMCTS_rule_based import DotsAndBoxesAgent as MCTSHard
@@ -10,7 +9,7 @@ from dotsandboxesagentMCTS_heavy_playout import DotsAndBoxesAgent as MCTSHard2
 
 
 
-from dotsandboxesagentMCTS_rave import DotsAndBoxesAgent as MCTSRaveAgent
+from dotsandboxesagentMCTS_rave2 import DotsAndBoxesAgent as MCTSRaveAgent
 
 from board_evaluator import user_action
 import copy
@@ -25,7 +24,7 @@ logging.basicConfig(level=logging.INFO)
 class BattleEvaluator:
     def __init__(self, agent1_class, agent2_class, nb_cols, nb_rows, timelimit):
         results = []
-        for i in range(50):
+        for i in range(500):
             print("Game ", i)
             self.reset_game(agent1_class, agent2_class, nb_cols, nb_rows, timelimit)
             self.run()
@@ -94,8 +93,8 @@ def main():
     timelimit = 0.5
 
 
-    random_agent = MCTSAgent2
-    mcts_agent = MCTSAgent2
+    random_agent = MCTSRaveAgent
+    mcts_agent = MCTSAgent
 
     BattleEvaluator(random_agent, mcts_agent, nb_rows, nb_cols, timelimit)
 

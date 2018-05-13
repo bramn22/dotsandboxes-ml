@@ -197,4 +197,3 @@ class Node:
                     if won == child.next_player:
                         child.moves_playout_stats[child.moves_playout.index(move)][1] += 1
                     child.moves_playout_stats[child.moves_playout.index(move)][1] += 1
-MCTS()
