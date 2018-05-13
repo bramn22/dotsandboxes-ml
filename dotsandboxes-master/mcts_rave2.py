@@ -36,8 +36,6 @@ class MCTS:
         self.start_timer()
         if not self.root.children:
             self.expansion(self.root)
-        self.moves_playout = [move for move in free_moves]
-        self.moves_playout_stats = [[0, 0] for _ in free_moves]
 
         while self.check_time():
             selected = self.selection(self.root)

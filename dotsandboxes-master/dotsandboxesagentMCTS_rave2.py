@@ -71,6 +71,7 @@ class DotsAndBoxesAgent:
                     free_lines.append((ri, ci, "v"))
                 if ci < (len(row) - 1) and cell["h"] == 0:
                     free_lines.append((ri, ci, "h"))
+        self.moves_made = []
         self.mcts = MCTS(self.cells,free_lines,player,timelimit)
 		
 
@@ -87,6 +88,7 @@ class DotsAndBoxesAgent:
         :param orientation: "v" or "h"
         :param player: 1 or 2
         """
+        self.moves_made.append((row, column, orientation))
         self.cells[row][column][orientation] = player
 
     def next_action(self):
@@ -113,7 +115,10 @@ class DotsAndBoxesAgent:
             # Board full
             return None
         print("player: ", self.player)
-        max_child, prob = self.mcts.run(self.cells, free_lines, next(iter(self.player)))
+        next_player = next(iter(self.player))
+        self.mcts.update_root(self.moves_made, self.cells, free_lines, next_player)
+        self.moves_made = []
+        max_child, prob = self.mcts.run(self.cells, free_lines, next_player)
         print("move: {}, prob: {}".format(max_child.move, prob))
         n = max_child
         print(n)
