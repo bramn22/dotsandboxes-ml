@@ -57,8 +57,6 @@ class DotsAndBoxesAgent:
                 columns.append({"v":0, "h":0})
             rows.append(columns)
         self.cells = rows
-		
-
 
     def add_player(self, player):
         """Use the same agent for multiple players."""

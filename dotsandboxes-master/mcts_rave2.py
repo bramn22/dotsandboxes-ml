@@ -40,7 +40,6 @@ class MCTS:
         self.moves_playout_stats = [[0, 0] for _ in free_moves]
 
         while self.check_time():
-            index = index+1
             selected = self.selection(self.root)
             child = self.expansion(selected)
             if child is not None:
